@@ -1,0 +1,36 @@
+﻿@page "/"
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+<h1>Hello, world!</h1>
+Welcome to your new app.
+
+@code
+{
+    [Inject]
+    private MyCircuitHandler? myCircuitHandler { get; set; }
+    private IJSObjectReference? module; // JavaScript 모듈 참조를 저장
+
+    // 컴포넌트 렌더링 후 JavaScript 모듈 import
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/test.js");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(myCircuitHandler.IsConnected)
+        {
+            if (module is not null)
+            {
+                await module.DisposeAsync();
+            }
+        }
+    }
+}
